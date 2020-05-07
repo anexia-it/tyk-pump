@@ -31,5 +31,5 @@ func init() {
 	AvailablePumps["sql_aggregate"] = &SQLAggregatePump{}
 	AvailablePumps["stdout"] = &StdOutPump{}
 	AvailablePumps["cloudlog"] = &CloudLogPump{}
-	AvailablePumps["cloudlog"] = &CloudLogUserPump{}
+	AvailablePumps["cloudloguser"] = &CloudLogUserPump{}
 }
