@@ -122,6 +122,7 @@ func (p *CloudLogPump) WriteData(ctx context.Context, data []interface{}) error 
 			//Alias         string
 		}
 		p.addCloudLogKeys(decoded.Tags, mappedItem)
+		p.addCloudLogHeaderKeys(decoded.Tags, mappedItem)
 		mapping["records"] = append(mapping["records"], mappedItem)
 	}
 
@@ -155,3 +156,32 @@ func (p *CloudLogPump) addCloudLogKeys(tags []string, mappedItem map[string]inte
 		}
 	}
 }
+
+func (p *CloudLogPump) addCloudLogHeaderKeys(tags []string, mappedItem map[string]interface{}) {
+	for _, s := range tags {
+		if strings.HasPrefix(s, "x-origin-path-") {
+			mappedItem["origin_path"] = strings.TrimPrefix(s, "x-origin-path-")
+		}
+		if strings.HasPrefix(s, "x-origin-method-") {
+			mappedItem["origin_method"] = strings.TrimPrefix(s, "x-origin-method-")
+		}
+		if strings.HasPrefix(s, "accept-language-") {
+			mappedItem["accept_language"] = strings.TrimPrefix(s, "accept-language-")
+		}
+		if strings.HasPrefix(s, "accept-") {
+			mappedItem["accept"] = strings.TrimPrefix(s, "accept-")
+		}
+		if strings.HasPrefix(s, "content-type-") {
+			mappedItem["content_type"] = strings.TrimPrefix(s, "content-type-")
+		}
+		if strings.HasPrefix(s, "referer-") {
+			mappedItem["referer"] = strings.TrimPrefix(s, "referer-")
+		}
+		if strings.HasPrefix(s, "origin-") {
+			mappedItem["origin"] = strings.TrimPrefix(s, "origin-")
+		}
+	}
+}
+
+
+
