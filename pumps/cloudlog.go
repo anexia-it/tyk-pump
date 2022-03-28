@@ -122,6 +122,7 @@ func (p *CloudLogPump) WriteData(ctx context.Context, data []interface{}) error 
 			//Alias         string
 		}
 		p.addCloudLogKeys(decoded.Tags, mappedItem)
+		p.addCloudLogHeaderKeys(decoded.Tags, mappedItem)
 		mapping["records"] = append(mapping["records"], mappedItem)
 	}
 
@@ -152,6 +153,17 @@ func (p *CloudLogPump) addCloudLogKeys(tags []string, mappedItem map[string]inte
 		conf := strings.Split(s, "::")
 		if len(conf) == 3 && conf[0] == "engine-cloudlog" {
 			mappedItem[conf[1]] = conf[2]
+		}
+	}
+}
+
+func (p *CloudLogPump) addCloudLogHeaderKeys(tags []string, mappedItem map[string]interface{}) {
+	for _, s := range tags {
+		if strings.HasPrefix(s, "x-origin-path") {
+			mappedItem["origin_path"] = strings.TrimPrefix(s, "x-origin-path-")
+		}
+		if strings.HasPrefix(s, "x-origin-method") {
+			mappedItem["origin_method"] = strings.TrimPrefix(s, "x-origin-method-")
 		}
 	}
 }
