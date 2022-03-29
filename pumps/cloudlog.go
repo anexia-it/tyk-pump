@@ -165,5 +165,23 @@ func (p *CloudLogPump) addCloudLogHeaderKeys(tags []string, mappedItem map[strin
 		if strings.HasPrefix(s, "x-origin-method") {
 			mappedItem["origin_method"] = strings.TrimPrefix(s, "x-origin-method-")
 		}
+		if strings.HasPrefix(s, "accept-language") {
+			mappedItem["accept_language"] = strings.TrimPrefix(s, "accept-language-")
+		}
+		if strings.HasPrefix(s, "accept") {
+			mappedItem["accept"] = strings.TrimPrefix(s, "accept-")
+		}
+		if strings.HasPrefix(s, "content-type") {
+			mappedItem["content_type"] = strings.TrimPrefix(s, "content-type-")
+		}
+		if strings.HasPrefix(s, "referer") {
+			mappedItem["referer"] = strings.TrimPrefix(s, "referer-")
+		}
+		if strings.HasPrefix(s, "origin") {
+			mappedItem["origin"] = strings.TrimPrefix(s, "origin-")
+		}
 	}
 }
+
+
+
