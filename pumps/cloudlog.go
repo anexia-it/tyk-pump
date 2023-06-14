@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/TykTechnologies/logrus"
 	"github.com/TykTechnologies/tyk-pump/analytics"
 	"github.com/mitchellh/mapstructure"
 	"net/http"
@@ -16,9 +15,9 @@ import (
 var cloudLogPumpPrefix = "cloudlog-pump"
 
 type CloudLogPumpConfig struct {
-	URL            string `mapstructure:"url"`
-	Token          string `mapstructure:"token"`
-	Environment    string `mapstructure:"environment"`
+	URL         string `mapstructure:"url"`
+	Token       string `mapstructure:"token"`
+	Environment string `mapstructure:"environment"`
 }
 
 type CloudLogPump struct {
@@ -27,12 +26,10 @@ type CloudLogPump struct {
 	CommonPumpConfig
 }
 
-func CloudLogPushData(data []byte, clUrl string, clToken string, prefix string) error {
+func CloudLogPushData(data []byte, clUrl string, clToken string, p CommonPumpConfig) error {
 	req, err := http.NewRequest("POST", clUrl, bytes.NewBuffer(data))
 	if err != nil {
-		log.WithFields(logrus.Fields{
-			"prefix": prefix,
-		}).Error("Cannot create new request.", err.Error())
+		p.log.Error("Cannot create new request.", err.Error())
 
 		return err
 	}
@@ -41,17 +38,13 @@ func CloudLogPushData(data []byte, clUrl string, clToken string, prefix string) 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		log.WithFields(logrus.Fields{
-			"prefix": prefix,
-		}).Error("Cannot post data.", err.Error())
+		p.log.Error("Cannot post data.", err.Error())
 
 		return err
 	}
 	defer resp.Body.Close()
 
-	log.WithFields(logrus.Fields{
-		"prefix": prefix,
-	}).Info("CloudLog request responded with a ", resp.StatusCode, " status code")
+	p.log.Info("CloudLog request responded with a ", resp.StatusCode, " status code")
 
 	return nil
 }
@@ -66,56 +59,51 @@ func (p *CloudLogPump) GetName() string {
 
 func (p *CloudLogPump) Init(conf interface{}) error {
 	p.clConf = &CloudLogPumpConfig{}
+	p.log = log.WithField("prefix", cloudLogPumpPrefix)
 	err := mapstructure.Decode(conf, p.clConf)
 	if err != nil {
-		log.WithFields(logrus.Fields{
-			"prefix": cloudLogPumpPrefix,
-		}).Fatalf("Failed to decode configuration: %s", err)
+		p.log.Fatalf("Failed to decode configuration: %s", err)
 	}
 
-	log.WithFields(logrus.Fields{
-		"prefix": cloudLogPumpPrefix,
-	}).Infof("Initializing CloudLog Pump")
+	p.log.Infof("Initializing CloudLog Pump")
 
 	return nil
 }
 
 func (p *CloudLogPump) WriteData(ctx context.Context, data []interface{}) error {
-	log.WithFields(logrus.Fields{
-		"prefix": cloudLogPumpPrefix,
-	}).Info("Writing ", len(data), " records")
+	p.log.Info("Writing ", len(data), " records")
 
 	var mapping = make(map[string][]map[string]interface{})
 	for _, v := range data {
 		decoded := v.(analytics.AnalyticsRecord)
 		mappedItem := map[string]interface{}{
-			"timestamp":       decoded.TimeStamp.Format(time.RFC3339),
-			"environment":     p.clConf.Environment,
-			"method":          decoded.Method,
-			"host":            decoded.Host,
-			"path":            decoded.Path,
-			"raw_path":        decoded.RawPath,
-			"response_code":   decoded.ResponseCode,
-			"api_key":         decoded.APIKey,
-			"api_version":     decoded.APIVersion,
-			"api_name":        decoded.APIName,
-			"api_id":          decoded.APIID,
-			"org_id":          decoded.OrgID,
-			"oauth_id":        decoded.OauthID,
-			"raw_request":     decoded.RawRequest,
-			"raw_response":    decoded.RawResponse,
-			"request_time":    decoded.RequestTime,
-			"ip_address":      decoded.IPAddress,
-			"user_agent":      decoded.UserAgent,
+			"timestamp":     decoded.TimeStamp.Format(time.RFC3339),
+			"environment":   p.clConf.Environment,
+			"method":        decoded.Method,
+			"host":          decoded.Host,
+			"path":          decoded.Path,
+			"raw_path":      decoded.RawPath,
+			"response_code": decoded.ResponseCode,
+			"api_key":       decoded.APIKey,
+			"api_version":   decoded.APIVersion,
+			"api_name":      decoded.APIName,
+			"api_id":        decoded.APIID,
+			"org_id":        decoded.OrgID,
+			"oauth_id":      decoded.OauthID,
+			"raw_request":   decoded.RawRequest,
+			"raw_response":  decoded.RawResponse,
+			"request_time":  decoded.RequestTime,
+			"ip_address":    decoded.IPAddress,
+			"user_agent":    decoded.UserAgent,
 			// Optional
-			"track_path":      decoded.TrackPath,
-			"expire_at":       decoded.ExpireAt.Format(time.RFC3339),
-			"day":             decoded.Day,
-			"month":           decoded.Month,
-			"year":            decoded.Year,
-			"hour":            decoded.Hour,
-			"content_length":  decoded.ContentLength,
-			"tags":            decoded.Tags,
+			"track_path":     decoded.TrackPath,
+			"expire_at":      decoded.ExpireAt.Format(time.RFC3339),
+			"day":            decoded.Day,
+			"month":          decoded.Month,
+			"year":           decoded.Year,
+			"hour":           decoded.Hour,
+			"content_length": decoded.ContentLength,
+			"tags":           decoded.Tags,
 			//Geo           GeoData
 			//Network       NetworkStats
 			//Latency       Latency
@@ -131,10 +119,8 @@ func (p *CloudLogPump) WriteData(ctx context.Context, data []interface{}) error 
 		return fmt.Errorf("failed to marshal decoded data: %s", err)
 	}
 
-	if CloudLogPushData(event, p.clConf.URL, p.clConf.Token, cloudLogPumpPrefix) != nil {
-		log.WithFields(logrus.Fields{
-			"prefix": cloudLogPumpPrefix,
-		}).Error("Cannot log data to cloudlog.")
+	if CloudLogPushData(event, p.clConf.URL, p.clConf.Token, p.CommonPumpConfig) != nil {
+		p.log.Error("Cannot log data to cloudlog.")
 	}
 
 	return nil
@@ -182,6 +168,3 @@ func (p *CloudLogPump) addCloudLogHeaderKeys(tags []string, mappedItem map[strin
 		}
 	}
 }
-
-
-
