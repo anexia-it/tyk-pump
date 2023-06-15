@@ -26,7 +26,6 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/influxdata/influxdb v1.8.3
 	github.com/influxdata/influxdb-client-go/v2 v2.6.0
-	github.com/jehiah/go-strftime v0.0.0-20151206194810-2efbe75097a5 // indirect
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/lintianzhi/graylogd v0.0.0-20180503131252-dc68342f04dc // indirect
 	github.com/logzio/logzio-go v0.0.0-20200316143903-ac8fc0e2910e
@@ -40,7 +39,7 @@ require (
 	github.com/quipo/statsd v0.0.0-20160923160612-75b7afedf0d2
 	github.com/resurfaceio/logger-go/v3 v3.2.1
 	github.com/robertkowalski/graylog-golang v0.0.0-20151121031040-e5295cfa2827
-	github.com/segmentio/analytics-go v0.0.0-20160711225931-bdb0aeca8a99
+	github.com/segmentio/analytics-go v3.1.0+incompatible
 	github.com/segmentio/backo-go v0.0.0-20160424052352-204274ad699c // indirect
 	github.com/segmentio/kafka-go v0.3.6
 	github.com/shirou/gopsutil v3.20.11+incompatible // indirect
