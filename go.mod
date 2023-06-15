@@ -55,10 +55,10 @@ require (
 	gopkg.in/olivere/elastic.v5 v5.0.85
 	gopkg.in/olivere/elastic.v6 v6.2.31
 	gopkg.in/vmihailenco/msgpack.v2 v2.9.1
-	gorm.io/driver/mysql v1.0.3
+	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/postgres v1.0.5
 	gorm.io/driver/sqlite v1.1.3
-	gorm.io/gorm v1.21.10
+	gorm.io/gorm v1.25.1
 )
 
 //replace gorm.io/gorm => ../gorm
